@@ -1,0 +1,6 @@
+{
+  "name": "Gravity Hero",
+  "description": "An addictive retro gravity-flipping runner starring you! Flip gravity between floor and ceiling, dodge classic green pipes, collect gravity orbs, and outrun the fox!",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
