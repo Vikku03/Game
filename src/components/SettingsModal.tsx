@@ -46,9 +46,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <h2 className="font-arcade text-lg sm:text-xl text-slate-900">SETTINGS & MODES</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-600 cursor-pointer"
+            className="w-11 h-11 rounded-full hover:bg-slate-200 active:scale-95 flex items-center justify-center text-slate-700 cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 

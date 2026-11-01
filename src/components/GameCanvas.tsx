@@ -89,8 +89,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
 
   // Pointer / Tap interaction
   const handlePointerDown = (e: React.PointerEvent) => {
-    // Only trigger if interacting with the canvas directly (not on HUD buttons)
-    if (e.target === canvasRef.current) {
+    if (gameState === 'PLAYING' || gameState === 'START') {
       onFlip();
     }
   };
@@ -98,14 +97,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full flex items-center justify-center overflow-hidden bg-slate-950 select-none cursor-pointer"
+      className="relative w-full h-full flex items-center justify-center overflow-hidden bg-slate-950 select-none cursor-pointer touch-none"
       onPointerDown={handlePointerDown}
     >
       <canvas
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="max-w-full max-h-full object-contain aspect-video shadow-2xl touch-none"
+        className="w-full h-full max-w-full max-h-full object-cover sm:object-contain touch-none select-none shadow-2xl"
       />
     </div>
   );

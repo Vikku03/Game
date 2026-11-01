@@ -6,10 +6,10 @@
 import { Cloud, Difficulty, EggCollectible, FoxChaser, GameMode, GameStats, GravityOrb, Particle, Pipe, Player } from './types';
 import { sounds } from './audio';
 
-export const CANVAS_WIDTH = 1920;
-export const CANVAS_HEIGHT = 1080;
-export const CEILING_Y = 76;
-export const FLOOR_Y = 1004;
+export const CANVAS_WIDTH = 720;
+export const CANVAS_HEIGHT = 1280;
+export const CEILING_Y = 110;
+export const FLOOR_Y = 1170;
 
 export class GameEngine {
   public player: Player;
@@ -23,9 +23,9 @@ export class GameEngine {
 
   public mode: GameMode = 'GRAVITY_SWITCH';
   public difficulty: Difficulty = 'NORMAL';
-  public scrollSpeed = 9;
-  public baseSpeed = 9;
-  public maxSpeed = 16;
+  public scrollSpeed = 7;
+  public baseSpeed = 7;
+  public maxSpeed = 13;
   public scrollX = 0;
   public mountainOffset = 0;
   public pipeSpawnTimer = 0;
@@ -38,8 +38,8 @@ export class GameEngine {
   constructor() {
     this.player = this.createPlayer();
     this.fox = {
-      x: 180,
-      targetX: 200,
+      x: 70,
+      targetX: 80,
       y: FLOOR_Y,
       runFrame: 0,
       angerLevel: 0,
@@ -59,10 +59,10 @@ export class GameEngine {
 
   private createPlayer(): Player {
     return {
-      x: 520, // matching chicken position in screenshot
-      y: 540,
-      width: 52,
-      height: 48,
+      x: 210, // Positioned nicely on the left for mobile portrait
+      y: 640,
+      width: 140, // Large big size to clearly identify the face on mobile
+      height: 140,
       vy: 0,
       gravityDirection: 1, // down
       rotation: 0,
@@ -90,19 +90,19 @@ export class GameEngine {
     this.orbSpawnTimer = 2.0;
     this.gameOver = false;
 
-    // Difficulty settings
+    // Difficulty settings calibrated for mobile portrait
     if (this.difficulty === 'EASY') {
-      this.baseSpeed = 7.5;
-      this.maxSpeed = 12;
+      this.baseSpeed = 6;
+      this.maxSpeed = 10;
     } else if (this.difficulty === 'NORMAL') {
-      this.baseSpeed = 9.2;
-      this.maxSpeed = 15;
+      this.baseSpeed = 7.2;
+      this.maxSpeed = 12.5;
     } else if (this.difficulty === 'HARD') {
-      this.baseSpeed = 11;
-      this.maxSpeed = 18;
+      this.baseSpeed = 8.5;
+      this.maxSpeed = 15;
     } else { // TURBO
-      this.baseSpeed = 13.5;
-      this.maxSpeed = 22;
+      this.baseSpeed = 10.5;
+      this.maxSpeed = 18;
     }
 
     this.scrollSpeed = this.baseSpeed;
@@ -112,8 +112,8 @@ export class GameEngine {
     this.stats.distance = 0;
     this.stats.orbsHit = 0;
 
-    this.fox.x = 180;
-    this.fox.targetX = 200;
+    this.fox.x = 70;
+    this.fox.targetX = 80;
   }
 
   private initClouds() {
@@ -137,14 +137,14 @@ export class GameEngine {
       this.player.gravityDirection = (this.player.gravityDirection === 1 ? -1 : 1);
       this.player.targetRotation = this.player.gravityDirection === -1 ? Math.PI : 0;
       this.player.isGrounded = false;
-      this.player.vy = this.player.gravityDirection * 6; // Initial impulse towards target rail
+      this.player.vy = this.player.gravityDirection * 9; // Snappy impulse towards target rail
       this.stats.gravityFlips++;
 
       // Emit flip sparkle particles without interrupting the song
       this.spawnFeathers(this.player.x, this.player.y, 6);
     } else {
       // Flappy gravity mode: flap upward relative to current gravity
-      this.player.vy = -14 * this.player.gravityDirection;
+      this.player.vy = -16 * this.player.gravityDirection;
       this.player.flapTime = 0.3;
       this.spawnFeathers(this.player.x, this.player.y, 4);
     }
@@ -162,7 +162,7 @@ export class GameEngine {
         life: 0.5 + Math.random() * 0.4,
         maxLife: 0.9,
         color: Math.random() > 0.3 ? '#ffffff' : '#de3838',
-        size: 8 + Math.random() * 6,
+        size: 10 + Math.random() * 8,
         rotation: Math.random() * Math.PI * 2,
         type: 'FEATHER'
       });
@@ -178,7 +178,7 @@ export class GameEngine {
       life: 0.5,
       maxLife: 0.5,
       color: '#40e0d0',
-      size: 160,
+      size: 180,
       type: 'ORB_RING'
     });
     for (let i = 0; i < 12; i++) {
@@ -191,7 +191,7 @@ export class GameEngine {
         life: 0.4,
         maxLife: 0.4,
         color: '#ffffff',
-        size: 6,
+        size: 8,
         type: 'SPARKLE'
       });
     }
@@ -204,7 +204,7 @@ export class GameEngine {
     }
 
     // Dynamic speed ramp
-    this.scrollSpeed = Math.min(this.maxSpeed, this.baseSpeed + this.stats.distance / 1200);
+    this.scrollSpeed = Math.min(this.maxSpeed, this.baseSpeed + this.stats.distance / 1500);
     this.scrollX += this.scrollSpeed;
     this.mountainOffset += this.scrollSpeed;
     this.stats.distance += Math.round(this.scrollSpeed * 0.5);
@@ -214,24 +214,25 @@ export class GameEngine {
       c.x -= c.speed * (this.scrollSpeed * 0.2);
       if (c.x < -200) {
         c.x = CANVAS_WIDTH + 150;
-        c.y = 100 + Math.random() * 320;
+        c.y = 120 + Math.random() * 260;
       }
     }
 
     // Player physics
-    const gravityAccel = 1.35; // G-force
+    const gravityAccel = 1.7; // Crisp G-force for mobile
     this.player.vy += gravityAccel * this.player.gravityDirection;
 
     // Terminal velocity clamp
-    const terminalV = 22;
+    const terminalV = 28;
     this.player.vy = Math.max(-terminalV, Math.min(terminalV, this.player.vy));
     this.player.y += this.player.vy;
 
     // Continuous rotation while flying/running through gravity
-    this.player.rotation += dt * (this.scrollSpeed * 0.55);
+    this.player.rotation += dt * (this.scrollSpeed * 0.65);
 
     // Check collision with ceiling rail and floor rail
-    const playerRadius = 32;
+    // With 140px avatar, radius to rail contact is 60px
+    const playerRadius = 60;
     const topLimit = CEILING_Y + playerRadius;
     const botLimit = FLOOR_Y - playerRadius;
 
@@ -252,19 +253,19 @@ export class GameEngine {
     }
 
     // Animation frames
-    this.player.runFrame += dt * (this.scrollSpeed / 7);
+    this.player.runFrame += dt * (this.scrollSpeed / 6);
     this.player.flapTime += dt;
     if (this.player.invulnerableTime > 0) {
       this.player.invulnerableTime -= dt;
     }
 
     // Update Fox chaser
-    this.fox.runFrame += dt * (this.scrollSpeed / 6);
-    // If player is on floor, fox slowly gains ground; if player is on ceiling, fox falls back!
+    this.fox.runFrame += dt * (this.scrollSpeed / 5);
+    // If player is on floor, fox slowly gains ground; if player is on ceiling, fox falls back
     if (this.player.isGrounded && this.player.gravityDirection === 1) {
-      this.fox.targetX = Math.min(380, this.fox.targetX + dt * 25);
+      this.fox.targetX = Math.min(130, this.fox.targetX + dt * 18);
     } else {
-      this.fox.targetX = Math.max(160, this.fox.targetX - dt * 40);
+      this.fox.targetX = Math.max(50, this.fox.targetX - dt * 26);
     }
     this.fox.x += (this.fox.targetX - this.fox.x) * 0.08;
 
@@ -272,15 +273,15 @@ export class GameEngine {
     this.pipeSpawnTimer -= dt;
     if (this.pipeSpawnTimer <= 0) {
       this.spawnPipe();
-      // Pipe frequency depends on speed and difficulty
-      const interval = Math.max(1.3, 2.4 - (this.scrollSpeed / this.maxSpeed) * 0.8);
+      // Pipe frequency calibrated for mobile portrait
+      const interval = Math.max(1.4, 2.3 - (this.scrollSpeed / this.maxSpeed) * 0.7);
       this.pipeSpawnTimer = interval;
     }
 
     this.orbSpawnTimer -= dt;
     if (this.orbSpawnTimer <= 0) {
       this.spawnOrbAndEggs();
-      this.orbSpawnTimer = 3.5 + Math.random() * 2.5;
+      this.orbSpawnTimer = 3.2 + Math.random() * 2.2;
     }
 
     // Update Pipes & Check Collisions
@@ -320,13 +321,13 @@ export class GameEngine {
       orb.x -= this.scrollSpeed;
       orb.pulseTimer += dt;
 
-      // Check chicken hitting orb
+      // Check human face hitting orb
       if (!orb.collected) {
         const dx = this.player.x - orb.x;
         const dy = this.player.y - orb.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist < orb.radius + 30) {
+        if (dist < orb.radius + 55) {
           orb.collected = true;
           this.stats.orbsHit++;
           this.stats.score += 5;
@@ -336,8 +337,8 @@ export class GameEngine {
           // Orb immediately flips gravity for exciting aerial maneuvers!
           this.player.gravityDirection = (this.player.gravityDirection === 1 ? -1 : 1);
           this.player.targetRotation = this.player.gravityDirection === -1 ? Math.PI : 0;
-          this.player.vy = this.player.gravityDirection * 10;
-          this.fox.targetX = Math.max(120, this.fox.targetX - 90); // Knock fox back!
+          this.player.vy = this.player.gravityDirection * 12;
+          this.fox.targetX = Math.max(40, this.fox.targetX - 50); // Knock fox back!
         }
       }
 
@@ -357,7 +358,7 @@ export class GameEngine {
         const dy = this.player.y - egg.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist < 36) {
+        if (dist < 60) {
           egg.collected = true;
           const eggValue = egg.type === 'EGG' ? 1 : 2;
           this.stats.eggs += eggValue;
@@ -376,7 +377,7 @@ export class GameEngine {
               life: 0.35,
               maxLife: 0.35,
               color: '#f6e05e',
-              size: 5,
+              size: 6,
               type: 'SPARKLE'
             });
           }
@@ -417,11 +418,12 @@ export class GameEngine {
   private checkPipeCollision(pipe: Pipe): boolean {
     const px = this.player.x;
     const py = this.player.y;
-    const pr = 20; // player collision radius
+    // Forgiving collision circle for 140px avatar so near-misses feel rewarding
+    const pr = 44;
 
     // Pipe X bounds with margin
-    const pipeLeft = pipe.x - 8; // rim sticks out 8px
-    const pipeRight = pipe.x + pipe.width + 8;
+    const pipeLeft = pipe.x - 6;
+    const pipeRight = pipe.x + pipe.width + 6;
 
     // Check if player's X overlaps pipe
     if (px + pr > pipeLeft && px - pr < pipeRight) {
@@ -446,8 +448,8 @@ export class GameEngine {
   }
 
   private spawnPipe() {
-    const pipeWidth = 96; // matching screenshot pipe thickness
-    const totalPlayableHeight = FLOOR_Y - CEILING_Y; // ~928px
+    const pipeWidth = 110;
+    const totalPlayableHeight = FLOOR_Y - CEILING_Y; // 1170 - 110 = 1060px
 
     // Difficulty creates different obstacle patterns
     // 1: Top-only pipe (must run on floor)
@@ -460,14 +462,14 @@ export class GameEngine {
 
     if (patternRoll < 0.38) {
       // Bottom pipe only (jump/flip to ceiling!)
-      botHeight = 260 + Math.random() * 260;
+      botHeight = 320 + Math.random() * 300;
     } else if (patternRoll < 0.72) {
       // Top pipe only (stay/flip to floor!)
-      topHeight = 260 + Math.random() * 260;
+      topHeight = 320 + Math.random() * 300;
     } else {
-      // Dual pipe with passage gap
-      const gap = Math.max(260, 360 - (this.scrollSpeed / this.maxSpeed) * 80);
-      const minH = 140;
+      // Dual pipe with passage gap (player size is 140, so 420px gap is spacious and fun)
+      const gap = Math.max(380, 460 - (this.scrollSpeed / this.maxSpeed) * 60);
+      const minH = 180;
       const maxH = totalPlayableHeight - gap - minH;
       topHeight = minH + Math.random() * (maxH - minH);
       botHeight = totalPlayableHeight - gap - topHeight;
@@ -491,24 +493,24 @@ export class GameEngine {
   }
 
   private spawnOrbAndEggs() {
-    // Spawns Gravity Orb `⊙` like in screenshot!
-    const spawnY = 280 + Math.random() * 480;
+    // Spawns Gravity Orb `⊙` well within mobile playable height
+    const spawnY = 360 + Math.random() * 540;
     this.orbs.push({
       id: this.nextOrbId++,
       x: CANVAS_WIDTH + 140,
       y: spawnY,
-      radius: 24,
+      radius: 32,
       collected: false,
       pulseTimer: 0,
       type: 'FLIP'
     });
 
-    // Also spawn a couple collectible golden eggs / corn near the orb
+    // Also spawn collectible golden eggs / corn near the orb
     for (let i = 0; i < 2; i++) {
       this.eggs.push({
         id: this.nextEggId++,
-        x: CANVAS_WIDTH + 260 + i * 80,
-        y: spawnY + (i % 2 === 0 ? -60 : 60),
+        x: CANVAS_WIDTH + 240 + i * 80,
+        y: spawnY + (i % 2 === 0 ? -70 : 70),
         collected: false,
         type: Math.random() > 0.4 ? 'EGG' : 'GOLDEN_CORN',
         wobble: Math.random() * Math.PI

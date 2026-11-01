@@ -8,8 +8,8 @@ import { HATS, SKINS } from './skins';
 
 export class GameRenderer {
   private ctx: CanvasRenderingContext2D;
-  private width = 1920;
-  private height = 1080;
+  private width = 720;
+  private height = 1280;
   private stripeOffset = 0;
   private faceImg: HTMLImageElement | null = null;
   private faceImgLoaded = false;
@@ -89,7 +89,7 @@ export class GameRenderer {
   // Draw the iconic snow-capped jagged mountain ridge from the screenshot
   public drawMountains(mountainOffset: number) {
     this.ctx.save();
-    const baseY = 1000;
+    const baseY = 1170;
     
     // Distant soft blue mountain silhouettes
     this.ctx.fillStyle = '#8ed0ee';
@@ -112,7 +112,7 @@ export class GameRenderer {
     this.ctx.fill();
 
     // Foreground snowy jagged ridge with white peaks and icy facets
-    const peakStep = 120;
+    const peakStep = 110;
     const peakCount = Math.ceil(this.width / peakStep) + 3;
     const pStart = Math.floor(mountainOffset * 0.5 / peakStep);
 
@@ -166,8 +166,8 @@ export class GameRenderer {
   // Draw the green diagonally-striped top and bottom rails exactly matching the screenshot
   public drawRails(scrollX: number) {
     this.stripeOffset = (scrollX % 48);
-    const railHeight = 76;
-    const creamHeight = 8;
+    const railHeight = 110;
+    const creamHeight = 10;
 
     const renderRail = (topY: number) => {
       this.ctx.save();
@@ -185,15 +185,15 @@ export class GameRenderer {
       this.ctx.rect(0, topY + creamHeight, this.width, railHeight - creamHeight * 2);
       this.ctx.clip();
 
-      const stripeW = 24;
+      const stripeW = 28;
       const totalWidth = this.width + stripeW * 4;
       for (let x = -stripeW * 2 - this.stripeOffset; x < totalWidth; x += stripeW * 2) {
         this.ctx.fillStyle = '#83bf36'; // Bright lime stripe
         this.ctx.beginPath();
         this.ctx.moveTo(x, topY + creamHeight);
         this.ctx.lineTo(x + stripeW, topY + creamHeight);
-        this.ctx.lineTo(x + stripeW - 20, topY + railHeight - creamHeight);
-        this.ctx.lineTo(x - 20, topY + railHeight - creamHeight);
+        this.ctx.lineTo(x + stripeW - 24, topY + railHeight - creamHeight);
+        this.ctx.lineTo(x - 24, topY + railHeight - creamHeight);
         this.ctx.closePath();
         this.ctx.fill();
 
@@ -201,8 +201,8 @@ export class GameRenderer {
         this.ctx.beginPath();
         this.ctx.moveTo(x + stripeW, topY + creamHeight);
         this.ctx.lineTo(x + stripeW * 2, topY + creamHeight);
-        this.ctx.lineTo(x + stripeW * 2 - 20, topY + railHeight - creamHeight);
-        this.ctx.lineTo(x + stripeW - 20, topY + railHeight - creamHeight);
+        this.ctx.lineTo(x + stripeW * 2 - 24, topY + railHeight - creamHeight);
+        this.ctx.lineTo(x + stripeW - 24, topY + railHeight - creamHeight);
         this.ctx.closePath();
         this.ctx.fill();
       }
@@ -210,11 +210,11 @@ export class GameRenderer {
 
       // Top and bottom crisp divider lines
       this.ctx.strokeStyle = '#5a7822';
-      this.ctx.lineWidth = 2;
+      this.ctx.lineWidth = 2.5;
       this.ctx.strokeRect(0, topY + creamHeight, this.width, railHeight - creamHeight * 2);
 
       this.ctx.strokeStyle = '#8d904f';
-      this.ctx.lineWidth = 3;
+      this.ctx.lineWidth = 3.5;
       this.ctx.beginPath();
       this.ctx.moveTo(0, topY + railHeight);
       this.ctx.lineTo(this.width, topY + railHeight);
@@ -225,9 +225,9 @@ export class GameRenderer {
       this.ctx.restore();
     };
 
-    // Ceiling rail
+    // Ceiling rail (y = 0 to 110)
     renderRail(0);
-    // Floor rail
+    // Floor rail (y = 1170 to 1280)
     renderRail(this.height - railHeight);
   }
 
@@ -239,7 +239,7 @@ export class GameRenderer {
       // 1. TOP OBSTACLE (descending from ceiling rail)
       if (pipe.topPipeHeight > 0) {
         const topH = pipe.topPipeHeight;
-        const pipeY = 76; // starts just below ceiling rail
+        const pipeY = 110; // starts just below ceiling rail
 
         if (this.cigaretteImgLoaded && this.cigaretteImg) {
           // Draw hanging down with filter at the ceiling and burning ash at bottom tip
@@ -281,7 +281,7 @@ export class GameRenderer {
       // 2. BOTTOM OBSTACLE (rising from floor rail)
       if (pipe.bottomPipeHeight > 0) {
         const botH = pipe.bottomPipeHeight;
-        const floorRailY = this.height - 76;
+        const floorRailY = this.height - 110;
         const shaftY = floorRailY - botH;
 
         if (this.cigaretteImgLoaded && this.cigaretteImg) {
@@ -466,9 +466,9 @@ export class GameRenderer {
   // Draw the sly chasing Fox (`🦊`) and Mole on the bottom rail matching the screenshot
   public drawFox(fox: FoxChaser) {
     this.ctx.save();
-    const floorY = 1004; // sits atop the bottom track
+    const floorY = 1170; // sits atop the bottom track
     const x = fox.x;
-    const y = floorY - 28;
+    const y = floorY - 34;
     const run = Math.sin(fox.runFrame * 12);
 
     // 1. Chasing orange fox
@@ -564,7 +564,7 @@ export class GameRenderer {
 
     // 2. Tiny scurrying black mole / mouse just in front of the fox (as in screenshot!)
     const moleX = x - 55;
-    const moleY = floorY - 10;
+    const moleY = floorY - 12;
     this.ctx.fillStyle = '#2d3748';
     this.ctx.beginPath();
     this.ctx.ellipse(moleX, moleY, 14, 9, 0, 0, Math.PI * 2);
@@ -580,7 +580,7 @@ export class GameRenderer {
     this.ctx.restore();
   }
 
-  // Draw the Player Hero (Rotating oval image)
+  // Draw the Player Hero (Rotating large human face avatar)
   public drawChicken(
     player: Player,
     _skinId: string,
@@ -589,13 +589,16 @@ export class GameRenderer {
   ) {
     this.ctx.save();
 
+    const size = 136; // Large big size clearly identifying the face on mobile
+    const r = size / 2;
+
     // Motion trail if active
     if (showTrail && Math.abs(player.vy) > 3) {
       this.ctx.save();
       this.ctx.globalAlpha = 0.35;
       this.ctx.fillStyle = player.gravityDirection === 1 ? '#38bdf8' : '#fbbf24';
       this.ctx.beginPath();
-      this.ctx.arc(player.x - 22, player.y - player.vy * 1.5, 30, 0, Math.PI * 2);
+      this.ctx.arc(player.x - 28, player.y - player.vy * 1.5, 52, 0, Math.PI * 2);
       this.ctx.fill();
       this.ctx.restore();
     }
@@ -609,23 +612,43 @@ export class GameRenderer {
     }
 
     // Outer subtle glowing aura
-    const aura = this.ctx.createRadialGradient(0, 0, 24, 0, 0, 42);
-    aura.addColorStop(0, 'rgba(56, 189, 248, 0.45)');
+    const aura = this.ctx.createRadialGradient(0, 0, r * 0.7, 0, 0, r * 1.35);
+    aura.addColorStop(0, 'rgba(56, 189, 248, 0.5)');
+    aura.addColorStop(0.7, 'rgba(245, 158, 11, 0.35)');
     aura.addColorStop(1, 'rgba(56, 189, 248, 0)');
     this.ctx.fillStyle = aura;
     this.ctx.beginPath();
-    this.ctx.arc(0, 0, 42, 0, Math.PI * 2);
+    this.ctx.arc(0, 0, r * 1.35, 0, Math.PI * 2);
     this.ctx.fill();
 
-    // Draw the rotating oval image
-    const size = 68;
+    // Draw the rotating large human face image
     if (this.faceImg && this.faceImgLoaded) {
-      this.ctx.drawImage(this.faceImg, -size / 2, -size / 2, size, size);
+      this.ctx.save();
+      // Clean circular avatar frame clip
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, r, 0, Math.PI * 2);
+      this.ctx.clip();
+      this.ctx.drawImage(this.faceImg, -r, -r, size, size);
+      this.ctx.restore();
+
+      // Sharp golden accent border
+      this.ctx.lineWidth = 4.5;
+      this.ctx.strokeStyle = '#f59e0b';
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, r, 0, Math.PI * 2);
+      this.ctx.stroke();
+
+      // Inner highlight rim
+      this.ctx.lineWidth = 2;
+      this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+      this.ctx.beginPath();
+      this.ctx.arc(0, 0, r - 3, 0, Math.PI * 2);
+      this.ctx.stroke();
     } else {
-      // Fallback
+      // Clean fallback if loading
       this.ctx.fillStyle = '#b47348';
       this.ctx.beginPath();
-      this.ctx.arc(0, 0, size / 2, 0, Math.PI * 2);
+      this.ctx.arc(0, 0, r, 0, Math.PI * 2);
       this.ctx.fill();
     }
 
