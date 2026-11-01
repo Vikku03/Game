@@ -116,7 +116,7 @@ export default function App() {
     }
     // GAMEOVER state intentionally does NOT restart on tap
     if (gameState === 'PLAYING') {
-      engine.handleFlipOrJump();
+      engine.startFly();
     }
   }, [gameState, handleStartGame, engine]);
 
@@ -133,12 +133,16 @@ export default function App() {
     }
   }, [gameState, pauseSong, startSong]);
 
-  // Keyboard navigation
+  // Keyboard navigation with KeyDown (thrust) and KeyUp (drop)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'KeyW' || e.code === 'KeyS') {
+      if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
         e.preventDefault();
-        handleFlip();
+        if (gameState === 'START') {
+          handleStartGame();
+        } else if (gameState === 'PLAYING') {
+          engine.startFly();
+        }
       } else if (e.code === 'Escape' || e.code === 'KeyP') {
         e.preventDefault();
         handleTogglePause();
@@ -148,9 +152,22 @@ export default function App() {
       }
     };
 
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+        e.preventDefault();
+        if (gameState === 'PLAYING') {
+          engine.stopFly();
+        }
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleFlip, handleTogglePause, handleStartGame]);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [gameState, handleTogglePause, handleStartGame, engine]);
 
   const handleSpendEggs = (amount: number): boolean => {
     if (engine.stats.totalEggs >= amount) {
@@ -185,6 +202,7 @@ export default function App() {
               mode={settings.mode}
               isPaused={gameState === 'PAUSED'}
               foxDistance={foxDistance}
+              isThrusting={engine.isThrusting}
               gravityDirection={engine.player.gravityDirection}
               onTogglePause={handleTogglePause}
               onRestart={handleStartGame}
@@ -220,14 +238,14 @@ export default function App() {
                 </div>
 
                 <div className="inline-flex items-center gap-2 bg-amber-400 text-slate-950 font-arcade text-xs px-3.5 py-1.5 rounded-full border-2 border-slate-900 shadow-[0_3px_0_#0f172a] mb-2 uppercase tracking-wider font-bold">
-                  <ArrowUpDown className="w-3.5 h-3.5" /> RETRO GRAVITY RUNNER
+                  <ArrowUpDown className="w-3.5 h-3.5" /> RETRO FLYING HERO
                 </div>
 
                 <h1 className="font-arcade text-3xl sm:text-4xl text-white drop-shadow-[0_3px_0_#0f172a] tracking-tight mb-2">
                   GRAVITY HERO
                 </h1>
                 <p className="text-white/90 text-xs sm:text-sm max-w-xs font-semibold drop-shadow-md mb-6 px-1">
-                  Flip gravity between floor and ceiling, dodge obstacles, collect gravity orbs ⊙, and outrun the fox!
+                  Tap screen to fly upwards, release to drop down! Dodge obstacles, collect gravity orbs ⊙, and outrun the fox!
                 </p>
 
                 {/* Huge Pulsing Play Button */}
@@ -240,7 +258,7 @@ export default function App() {
                 </button>
 
                 <div className="mt-4 text-amber-300 font-arcade text-[11px] font-bold tracking-wider">
-                  ⚡ TAP SCREEN TO FLIP GRAVITY ⚡
+                  ✈️ TAP SCREEN TO FLY • RELEASE TO DROP ⬇
                 </div>
               </div>
 

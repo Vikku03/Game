@@ -35,7 +35,7 @@ export const InstructionsModal: React.FC<InstructionsModalProps> = ({ onClose })
               Press <span className="bg-white px-2 py-0.5 rounded border border-slate-300 shadow-sm font-arcade text-xs">SPACEBAR</span>, <span className="bg-white px-2 py-0.5 rounded border border-slate-300 shadow-sm font-arcade text-xs">CLICK</span>, or <span className="bg-white px-2 py-0.5 rounded border border-slate-300 shadow-sm font-arcade text-xs">TAP SCREEN</span>
             </p>
             <p className="text-xs text-slate-600 mt-1">
-              Flipping gravity instantly sends the hero flying toward the opposite rail! Run along the floor or ceiling upside-down!
+              Tap or hold the screen to fly up! When you stop tapping or release, gravity pulls the hero down!
             </p>
           </div>
 
@@ -46,9 +46,9 @@ export const InstructionsModal: React.FC<InstructionsModalProps> = ({ onClose })
                 1
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 text-sm">Dodge Obstacles</h4>
+                <h4 className="font-bold text-slate-900 text-sm">Dodge Cigarette Obstacles</h4>
                 <p className="text-xs text-slate-500">
-                  Obstacles come from both the ceiling and the floor. When a bottom obstacle blocks your path, flip up to the ceiling rail! When a top obstacle descends, flip back down!
+                  Fly through the gaps between obstacles! Tap to climb over lower obstacles, and let go to glide under upper obstacles. Don't crash into the floor!
                 </p>
               </div>
             </div>

@@ -34,6 +34,7 @@ export class GameEngine {
   public nextOrbId = 1;
   public nextEggId = 1;
   public gameOver = false;
+  public isThrusting = false;
 
   constructor() {
     this.player = this.createPlayer();
@@ -60,10 +61,10 @@ export class GameEngine {
   private createPlayer(): Player {
     return {
       x: 210, // Positioned nicely on the left for mobile portrait
-      y: 640,
+      y: 580, // Comfortable airborne height
       width: 140, // Large big size to clearly identify the face on mobile
       height: 140,
-      vy: 0,
+      vy: -2,
       gravityDirection: 1, // down
       rotation: 0,
       targetRotation: 0,
@@ -89,6 +90,7 @@ export class GameEngine {
     this.pipeSpawnTimer = 1.0;
     this.orbSpawnTimer = 2.0;
     this.gameOver = false;
+    this.isThrusting = false;
 
     // Difficulty settings calibrated for mobile portrait
     if (this.difficulty === 'EASY') {
@@ -129,24 +131,42 @@ export class GameEngine {
     }
   }
 
-  public handleFlipOrJump() {
+  // Tap or Hold to fly upwards!
+  public startFly() {
     if (!this.player.alive || this.gameOver) return;
 
-    if (this.mode === 'GRAVITY_SWITCH') {
-      // Invert gravity direction
-      this.player.gravityDirection = (this.player.gravityDirection === 1 ? -1 : 1);
-      this.player.targetRotation = this.player.gravityDirection === -1 ? Math.PI : 0;
-      this.player.isGrounded = false;
-      this.player.vy = this.player.gravityDirection * 9; // Snappy impulse towards target rail
-      this.stats.gravityFlips++;
+    this.isThrusting = true;
+    // Immediate upward flap impulse so tapping feels snappy and responsive
+    this.player.vy = -13.2;
+    this.player.flapTime = 0.25;
+    this.stats.gravityFlips++;
 
-      // Emit flip sparkle particles without interrupting the song
-      this.spawnFeathers(this.player.x, this.player.y, 6);
-    } else {
-      // Flappy gravity mode: flap upward relative to current gravity
-      this.player.vy = -16 * this.player.gravityDirection;
-      this.player.flapTime = 0.3;
-      this.spawnFeathers(this.player.x, this.player.y, 4);
+    // Emit little sparkle lift particles underneath the avatar
+    this.spawnThrustSparkles(4);
+  }
+
+  // Release tap to drop down naturally!
+  public stopFly() {
+    this.isThrusting = false;
+  }
+
+  public handleFlipOrJump() {
+    this.startFly();
+  }
+
+  public spawnThrustSparkles(count: number) {
+    for (let i = 0; i < count; i++) {
+      this.particles.push({
+        x: this.player.x - 20 + Math.random() * 40,
+        y: this.player.y + 45 + Math.random() * 15,
+        vx: (Math.random() - 0.5) * 5,
+        vy: 3 + Math.random() * 5,
+        life: 0.3,
+        maxLife: 0.3,
+        color: Math.random() > 0.4 ? '#facc15' : '#fbbf24',
+        size: 6 + Math.random() * 4,
+        type: 'SPARKLE'
+      });
     }
   }
 
@@ -218,38 +238,56 @@ export class GameEngine {
       }
     }
 
-    // Player physics
-    const gravityAccel = 1.7; // Crisp G-force for mobile
-    this.player.vy += gravityAccel * this.player.gravityDirection;
+    // Player flight and gravity physics
+    if (this.isThrusting) {
+      // While tapping or holding, fly upwards!
+      this.player.vy = Math.max(-14, this.player.vy - 1.3);
+      if (Math.random() < 0.25) {
+        this.particles.push({
+          x: this.player.x - 15 + Math.random() * 30,
+          y: this.player.y + 45,
+          vx: (Math.random() - 0.5) * 4,
+          vy: 3 + Math.random() * 4,
+          life: 0.25,
+          maxLife: 0.25,
+          color: '#facc15',
+          size: 6,
+          type: 'SPARKLE'
+        });
+      }
+    } else {
+      // When tap stops, gravity pulls down naturally!
+      const gravityAccel = 0.82;
+      this.player.vy += gravityAccel;
+      const maxFallSpeed = 16.5;
+      if (this.player.vy > maxFallSpeed) {
+        this.player.vy = maxFallSpeed;
+      }
+    }
 
-    // Terminal velocity clamp
-    const terminalV = 28;
-    this.player.vy = Math.max(-terminalV, Math.min(terminalV, this.player.vy));
     this.player.y += this.player.vy;
 
-    // Continuous rotation while flying/running through gravity
+    // Continuous rotation while flying through the air
     this.player.rotation += dt * (this.scrollSpeed * 0.65);
 
-    // Check collision with ceiling rail and floor rail
-    // With 140px avatar, radius to rail contact is 60px
-    const playerRadius = 60;
+    // Collision boundaries:
+    const playerRadius = 48;
     const topLimit = CEILING_Y + playerRadius;
     const botLimit = FLOOR_Y - playerRadius;
 
+    // Ceiling boundary: cushion bump so player stays in play area
     if (this.player.y <= topLimit) {
       this.player.y = topLimit;
-      this.player.vy = 0;
-      if (this.player.gravityDirection === -1) {
-        this.player.isGrounded = true;
+      if (this.player.vy < 0) {
+        this.player.vy = 0;
       }
-    } else if (this.player.y >= botLimit) {
+    }
+
+    // Floor boundary: if player drops all the way down without tapping, crash onto floor rail!
+    if (this.player.y >= botLimit) {
       this.player.y = botLimit;
-      this.player.vy = 0;
-      if (this.player.gravityDirection === 1) {
-        this.player.isGrounded = true;
-      }
-    } else {
-      this.player.isGrounded = false;
+      this.triggerGameOver();
+      return false;
     }
 
     // Animation frames
@@ -261,11 +299,11 @@ export class GameEngine {
 
     // Update Fox chaser
     this.fox.runFrame += dt * (this.scrollSpeed / 5);
-    // If player is on floor, fox slowly gains ground; if player is on ceiling, fox falls back
-    if (this.player.isGrounded && this.player.gravityDirection === 1) {
-      this.fox.targetX = Math.min(130, this.fox.targetX + dt * 18);
+    // If player is flying high, fox falls back; if player is dropping low, fox closes in
+    if (this.player.y > 850) {
+      this.fox.targetX = Math.min(125, this.fox.targetX + dt * 25);
     } else {
-      this.fox.targetX = Math.max(50, this.fox.targetX - dt * 26);
+      this.fox.targetX = Math.max(50, this.fox.targetX - dt * 25);
     }
     this.fox.x += (this.fox.targetX - this.fox.x) * 0.08;
 
@@ -334,10 +372,8 @@ export class GameEngine {
           sounds.playOrb();
           this.spawnOrbBlast(orb.x, orb.y);
 
-          // Orb immediately flips gravity for exciting aerial maneuvers!
-          this.player.gravityDirection = (this.player.gravityDirection === 1 ? -1 : 1);
-          this.player.targetRotation = this.player.gravityDirection === -1 ? Math.PI : 0;
-          this.player.vy = this.player.gravityDirection * 12;
+          // Orb gives a great upward boost and scares fox away!
+          this.player.vy = -12;
           this.fox.targetX = Math.max(40, this.fox.targetX - 50); // Knock fox back!
         }
       }
@@ -460,16 +496,16 @@ export class GameEngine {
     let topHeight = 0;
     let botHeight = 0;
 
-    if (patternRoll < 0.38) {
-      // Bottom pipe only (jump/flip to ceiling!)
-      botHeight = 320 + Math.random() * 300;
-    } else if (patternRoll < 0.72) {
-      // Top pipe only (stay/flip to floor!)
-      topHeight = 320 + Math.random() * 300;
+    if (patternRoll < 0.22) {
+      // Bottom cigarette obstacle only (tap to fly comfortably over it!)
+      botHeight = 240 + Math.random() * 240;
+    } else if (patternRoll < 0.42) {
+      // Top cigarette obstacle only (stop tap to glide under it!)
+      topHeight = 240 + Math.random() * 240;
     } else {
-      // Dual pipe with passage gap (player size is 140, so 420px gap is spacious and fun)
-      const gap = Math.max(380, 460 - (this.scrollSpeed / this.maxSpeed) * 60);
-      const minH = 180;
+      // Dual cigarette obstacles with a spacious flight passage gap (player avatar is 140, 420px gap is spacious and forgiving)
+      const gap = Math.max(400, 470 - (this.scrollSpeed / this.maxSpeed) * 60);
+      const minH = 140;
       const maxH = totalPlayableHeight - gap - minH;
       topHeight = minH + Math.random() * (maxH - minH);
       botHeight = totalPlayableHeight - gap - topHeight;

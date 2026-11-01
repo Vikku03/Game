@@ -13,6 +13,7 @@ interface HUDProps {
   isPaused: boolean;
   foxDistance: number; // 0 to 100
   gravityDirection?: number;
+  isThrusting?: boolean;
   onTogglePause: () => void;
   onRestart: () => void;
   onOpenSettings: () => void;
@@ -22,7 +23,7 @@ export const HUD: React.FC<HUDProps> = ({
   stats,
   isPaused,
   foxDistance,
-  gravityDirection = 1,
+  isThrusting = false,
   onTogglePause,
   onRestart,
 }) => {
@@ -79,16 +80,16 @@ export const HUD: React.FC<HUDProps> = ({
 
       {/* Bottom Status Bar (Overlays Floor Rail) */}
       <div className="w-full flex items-center justify-between pb-2 px-1">
-        {/* Gravity State Badge */}
+        {/* Flight State Badge */}
         <div className="pointer-events-auto flex items-center gap-2">
           <div
             className={`px-3 py-1 rounded-full border-2 font-arcade text-[10px] font-bold shadow-md transition-all ${
-              gravityDirection === -1
-                ? 'bg-cyan-400 text-slate-950 border-white'
-                : 'bg-amber-400 text-slate-950 border-slate-900'
+              isThrusting
+                ? 'bg-amber-400 text-slate-950 border-white'
+                : 'bg-sky-500 text-white border-slate-900'
             }`}
           >
-            {gravityDirection === -1 ? '⬆ CEILING' : '⬇ FLOOR'}
+            {isThrusting ? '✈️ FLYING' : '⬇ DROPPING'}
           </div>
 
           {foxDistance > 65 && (

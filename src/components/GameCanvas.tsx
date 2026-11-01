@@ -87,10 +87,20 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
     };
   }, [gameState, engine, settings, onGameOver]);
 
-  // Pointer / Tap interaction
+  // Pointer / Tap interaction for fly on tap, drop on release
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (gameState === 'PLAYING' || gameState === 'START') {
+    e.preventDefault();
+    if (gameState === 'PLAYING') {
+      engine.startFly();
+    } else if (gameState === 'START') {
       onFlip();
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    e.preventDefault();
+    if (gameState === 'PLAYING') {
+      engine.stopFly();
     }
   };
 
@@ -99,6 +109,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       ref={containerRef}
       className="relative w-full h-full flex items-center justify-center overflow-hidden bg-slate-950 select-none cursor-pointer touch-none"
       onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+      onPointerCancel={handlePointerUp}
     >
       <canvas
         ref={canvasRef}
