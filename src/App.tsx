@@ -70,7 +70,7 @@ export default function App() {
     bgm.preload();
     gameOverDialogue.preload();
     const img = new Image();
-    img.src = '/assets/aistudio/WhatsApp_Image_2026-11-01_at_7.37.16_PM_30ca669a.jpeg';
+    img.src = '/assets/aistudio/Shocked_Man_in_a_Sunlit_Park_958f4d7a.png';
   }, []);
 
   // Periodic HUD state sync
@@ -230,7 +230,7 @@ export default function App() {
                 <div className="relative mb-4 flex items-center justify-center">
                   <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-full border-4 border-amber-400 shadow-[0_12px_36px_rgba(0,0,0,0.7)] overflow-hidden ring-4 ring-slate-900 relative bg-slate-950/80 flex items-center justify-center">
                     <img
-                      src="/assets/aistudio/oval_image_ee00d596.png"
+                      src="/assets/aistudio/Screenshot_2026-11-02_095557_c73ff9f7.png"
                       alt="Gravity Hero Face"
                       className="w-full h-full object-cover animate-[spin_4s_linear_infinite]"
                     />

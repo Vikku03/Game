@@ -153,7 +153,7 @@ class GameOverDialoguePlayer {
 
     if (!this.audioElement) {
       try {
-        this.audioElement = new Audio('/assets/aistudio/Chee_Navutunava_kadu_Singham_surya_dialogue_-_Telugu_babu__ef3d35ac.mp3');
+        this.audioElement = new Audio('/assets/aistudio/Sairam_Sairam_Sairam_Msg_Ringtone__viralvideo__trending__youtubeshorts__UnqGamer__tNmW9Sno7G0__509d5127.mp3');
         this.audioElement.volume = 1.0;
         this.audioElement.preload = 'auto';
       } catch (e) {}
@@ -163,7 +163,7 @@ class GameOverDialoguePlayer {
     if (AudioCtxClass && !this.audioBuffer) {
       try {
         this.ctx = new AudioCtxClass();
-        fetch('/assets/aistudio/Chee_Navutunava_kadu_Singham_surya_dialogue_-_Telugu_babu__ef3d35ac.mp3')
+        fetch('/assets/aistudio/Sairam_Sairam_Sairam_Msg_Ringtone__viralvideo__trending__youtubeshorts__UnqGamer__tNmW9Sno7G0__509d5127.mp3')
           .then(res => res.arrayBuffer())
           .then(buf => this.ctx!.decodeAudioData(buf))
           .then(decoded => {

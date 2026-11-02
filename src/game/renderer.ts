@@ -27,7 +27,7 @@ export class GameRenderer {
     this.faceImg.onload = () => {
       this.faceImgLoaded = true;
     };
-    this.faceImg.src = '/assets/aistudio/oval_image_ee00d596.png';
+    this.faceImg.src = '/assets/aistudio/Screenshot_2026-11-02_095557_c73ff9f7.png';
   }
 
   private initCigaretteImage() {
@@ -628,7 +628,13 @@ export class GameRenderer {
       this.ctx.beginPath();
       this.ctx.arc(0, 0, r, 0, Math.PI * 2);
       this.ctx.clip();
-      this.ctx.drawImage(this.faceImg, -r, -r, size, size);
+      // Center-crop to avoid distortion if aspect ratio is not 1:1
+      const imgW = this.faceImg.naturalWidth || this.faceImg.width || 1;
+      const imgH = this.faceImg.naturalHeight || this.faceImg.height || 1;
+      const cropSize = Math.min(imgW, imgH);
+      const sx = (imgW - cropSize) / 2;
+      const sy = (imgH - cropSize) / 2;
+      this.ctx.drawImage(this.faceImg, sx, sy, cropSize, cropSize, -r, -r, size, size);
       this.ctx.restore();
 
       // Sharp golden accent border

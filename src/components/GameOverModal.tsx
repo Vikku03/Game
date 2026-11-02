@@ -13,7 +13,7 @@ interface GameOverModalProps {
   onMenu?: () => void;
 }
 
-const GAME_OVER_IMAGE_URL = '/assets/aistudio/WhatsApp_Image_2026-11-01_at_7.37.16_PM_30ca669a.jpeg';
+const GAME_OVER_IMAGE_URL = '/assets/aistudio/Shocked_Man_in_a_Sunlit_Park_958f4d7a.png';
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({
   isNewHighscore,
